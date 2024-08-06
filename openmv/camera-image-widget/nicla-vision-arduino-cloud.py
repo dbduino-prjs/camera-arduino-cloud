@@ -190,7 +190,7 @@ def arduino_cloud_register():
     _client.register("messages")
     _client.register("camera_take_snapshot", value=False, on_write=on_camera_take_snapshot_changed)
     _client.register("clear_event", value=False, on_write=on_clear_event)
-    _client.register("global_enable", value=False, on_write=on_global_enable)
+    _client.register("global_enable", on_write=on_global_enable)
     return _client
 
 # ----------------------------------------------------
@@ -203,15 +203,8 @@ if __name__ == "__main__":
     # Initialize the audio
     audio.init(channels=1, frequency=16000, gain_db=24, highpass=0.9883)
 
-    # Start streaming audio with the callback function
-#    if global_enable:
-#        audio.start_streaming(audio_callback)
-#        pyb.delay(1000)
-
     # Arduino Cloud
     client = arduino_cloud_register()
-
-    print("Starting with system enabled: ", global_enable)
 
     # Start the client
     client.start()
