@@ -2,7 +2,9 @@ import logging
 from flask import Flask, request, send_from_directory, redirect, url_for
 import os
 
-PORT=8080
+USE_HTTPS=True  # Set True/False if you want to use HTTPS/HTTP
+HTTP_PORT=8080
+HTTPS_PORT=8443
 
 # Folder where the uploaded files are stored
 UPLOAD_FOLDER = './uploads'
@@ -39,4 +41,8 @@ def download_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+    if USE_HTTPS:
+        context = ('cert.pem', 'key.pem')  # Replace with your actual certificate and key files
+        app.run(host='0.0.0.0', port=HTTPS_PORT, debug=True, ssl_context=context)
+    else:
+        app.run(host='0.0.0.0', port=HTTP_PORT, debug=True)
