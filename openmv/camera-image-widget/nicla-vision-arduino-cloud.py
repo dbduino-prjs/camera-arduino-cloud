@@ -1,7 +1,8 @@
 # Untitled - By: dbeamonte-arduino - Fri Aug 2 2024
 
 FILENAME = "snapshot.jpg"   # Snapshot file name (and path)
-server_url = 'http://192.168.1.159:8080/upload'  # Replace with your server URL
+#server_url = 'http://192.168.1.159:8080/upload'  # Replace with your server URL
+server_url = 'http://192.168.1.204:8080/upload'  # Replace with your server URL
 
 # Set your sound threshold here
 SOUND_THRESHOLD = 700  # Adjust this value based on your requirements
@@ -9,7 +10,9 @@ SOUND_THRESHOLD = 700  # Adjust this value based on your requirements
 INHIBIT_PERIOD = 30   # Value in secs
 
 from secrets import WIFI_SSID, WIFI_PASS, DEVICE_ID, SECRET_KEY
+from arduino_iot_cloud import Task
 from arduino_iot_cloud import ArduinoCloudClient
+from arduino_iot_cloud import async_wifi_connection
 import network
 import urequests
 import time
@@ -18,6 +21,7 @@ import pyb # Import module for board related functions
 import sensor # Import the module for sensor related functions
 import image # Import module containing machine vision algorithms
 import audio
+import logging
 from ulab import numpy as np
 
 redLED   = pyb.LED(1) # built-in red LED
@@ -122,6 +126,10 @@ def upload_snapshot():
 #    print('Event Timestamp poll: ', ts)
 #    return ts
 
+def get_time_string():
+    ts = time.gmtime()
+    return f"{ts[0]}-{ts[1]}-{ts[2]} {ts[3]}:{ts[4]}:{ts[5]} UTC"
+
 # CALLBACK (camera_take_snapshot)
 def on_camera_take_snapshot_changed(client, value):
     print('Take manual snapshot: ', value)
@@ -131,7 +139,7 @@ def on_camera_take_snapshot_changed(client, value):
             upload_snapshot()
             ts = time.time()
             client['camera_take_snapshot'] = False
-            client['messages'] = f"{ts}: Take manual snapshot"
+            client['messages'] = f"[{get_time_string()}] Take manual snapshot"
     except Exception as e:
         print(f"Take snapshot: Unexpected error: {e}")
 
@@ -142,7 +150,7 @@ def on_clear_event(client, value):
         print('Clear event: ', value)
         client['event_detected'] = False
         client['clear_event']    = False
-        client['messages'] = f"{ts}: Clear event"
+        client['messages'] = f"[{get_time_string()}] Clear event"
 
 # Audio callback
 def audio_callback(buffer):
@@ -158,8 +166,8 @@ def audio_callback(buffer):
                 take_camera_snapshot()
                 upload_snapshot()
                 client['event_detected']  = True
-                client['event_timestamp'] = ts
-                client['messages'] = f"{ts}: Event happened!!! Noise level: {l_mean}"
+                #client['event_timestamp'] = get_time_string()
+                client['messages'] = f"[{get_time_string()}] Event happened!!! Noise level: {l_mean}"
                 inhibit_end_period = ts + INHIBIT_PERIOD
             else:
                 print("Skipping...")
@@ -176,21 +184,38 @@ def on_global_enable(client, value):
         audio.start_streaming(audio_callback)
     else:
         audio.stop_streaming()
-    client['messages'] = f"{ts}: Global enable: {value}"
+    client['messages'] = f"[{get_time_string()}] Global enable: {value}"
 
 # Connect to Arduino Cloud and register the variables
 def arduino_cloud_register():
+    # Configure the logger.
+    # All message equal or higher to the logger level are printed.
+    # To see more debugging messages, set level=logging.DEBUG.
+    logging.basicConfig(
+        datefmt="%H:%M:%S",
+        format="%(asctime)s.%(msecs)03d %(message)s",
+        level=logging.DEBUG
+    )
+
     _client = ArduinoCloudClient(device_id=DEVICE_ID, username=DEVICE_ID, password=SECRET_KEY)
 
     # Register the Arduino Cloud variables with the callback functions
     #client.register("event_detected", on_read=event_detected_poll, interval=10.0)
     #client.register("event_timestamp", on_read=event_timestamp_poll, interval=10.0)
     _client.register("event_detected")
-    _client.register("event_timestamp")
+    #_client.register("event_timestamp")
     _client.register("messages")
     _client.register("camera_take_snapshot", value=False, on_write=on_camera_take_snapshot_changed)
     _client.register("clear_event", value=False, on_write=on_clear_event)
     _client.register("global_enable", on_write=on_global_enable)
+
+    # This function is registered as a background task to reconnect to WiFi if it ever gets
+    # disconnected. Note, it can also be used for the initial WiFi connection, in synchronous
+    # mode, if it's called without any args (i.e, async_wifi_connection()) at the beginning of
+    # this script.
+    _client.register(
+        Task("wifi_connection", on_run=async_wifi_connection, interval=60.0)
+    )
     return _client
 
 # ----------------------------------------------------
@@ -205,6 +230,7 @@ if __name__ == "__main__":
 
     # Arduino Cloud
     client = arduino_cloud_register()
+    client['messages'] = f"[{get_time_string()}] --- System started ---"
 
     # Start the client
     client.start()
