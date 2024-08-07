@@ -1,10 +1,11 @@
 import logging
 from flask import Flask, request, send_from_directory, redirect, url_for
 import os
+from threading import Thread
 
-USE_HTTPS=True  # Set True/False if you want to use HTTPS/HTTP
-HTTP_PORT=8080
-HTTPS_PORT=8443
+# Set your own HTTP and HTTPS listening ports
+PORT_HTTP  = 8080
+PORT_HTTPS = 8443
 
 # Folder where the uploaded files are stored
 UPLOAD_FOLDER = './uploads'
@@ -40,9 +41,21 @@ def download_file(filename):
     app.logger.info("Downloading '{filename}'")
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
+def run_http():
+    app.run(host='0.0.0.0', port=PORT_HTTP, debug=False)
+
+def run_https():
+    context = ('cert.pem', 'key.pem')  # Replace with your actual certificate and key files
+    app.run(host='0.0.0.0', port=PORT_HTTPS, debug=False, ssl_context=context)
+
 if __name__ == '__main__':
-    if USE_HTTPS:
-        context = ('cert.pem', 'key.pem')  # Replace with your actual certificate and key files
-        app.run(host='0.0.0.0', port=HTTPS_PORT, debug=True, ssl_context=context)
-    else:
-        app.run(host='0.0.0.0', port=HTTP_PORT, debug=True)
+    app.debug = True  # Enable debugging mode manually
+
+    http_thread  = Thread(target=run_http)
+    https_thread = Thread(target=run_https)
+    
+    http_thread.start()
+    https_thread.start()
+    
+    http_thread.join()
+    https_thread.join()

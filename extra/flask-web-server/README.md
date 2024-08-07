@@ -1,15 +1,26 @@
 # Python ultra simple Web server
-Web server implemented in Python using Flask that allows you to upload and download files
+Web server implemented in Python using Flask that allows you to upload and download files. It works both on HTTP and HTTPS.
 
 ## How to use it
 
-### Select HTTP / HTTPS
+### Configure the ports
 
-First, you need to specify if you are going to use HTTP or HTTPS. You need to edit the following line. Set `True` (HTTPS) or `False` (HTTP) depending on your needs
+The server will listen both in HTTP and HTTPS. The listening ports can be modified by changing the following lines of `flask-web-server.py`
 
 ```python
-USE_HTTPS=True
+PORT_HTTP  = 8080
+PORT_HTTPS = 8443
 ```
+
+### Run the script
+
+To run the script, you can type the following command:
+
+```
+python3 flask-web-server.py
+```
+
+### Using the server with HTTPS
 
 If you want to use HTTPS and you don't have any certificates, you also have to generate it. You can use the following command
 
@@ -21,13 +32,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pe
 > Note: This command will work depending on your server. If you are using a public IP address, you should indicate that one. If you are using a domain, you should indicate the domain name.
 > Note: As the certificate is self-signed, it's likely that you have to add it to the list of trusted certificates of your OS
 
-### Run the script
-
-To run the script, you can type the following command:
-
-```
-python3 flask-web-server.py
-```
 
 ## Test de server
 File upload
