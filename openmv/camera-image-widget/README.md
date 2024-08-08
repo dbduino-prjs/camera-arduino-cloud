@@ -108,7 +108,7 @@ There are 2 ways to create the dashboard. Choose one:
 
 2. Clone the [template](./dashboard-Camera-Security-System.yaml) following the instructions in the [Annex](README.md#clone-the-dashboard-using-cloud-cli)
 
-#### 2.3. Create the Trigger
+#### 2.4. Create the Trigger
 
 With a trigger you can configure an condition that will be used to send you a notification when an event happen. In this case we will use the variable `event_detected`
 
