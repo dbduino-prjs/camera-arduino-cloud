@@ -1,0 +1,85 @@
+name: Camera Security System
+widgets:
+    - height: 2
+      height_mobile: 4
+      name: Take Manual Picture
+      type: Push Button
+      variables:
+        - thing_id: Camera-Security-System-Nicla
+          variable_id: camera_take_snapshot
+      width: 3
+      width_mobile: 4
+      x: 0
+      x_mobile: 0
+      "y": 4
+      y_mobile: 12
+    - height: 4
+      height_mobile: 4
+      name: Clear Event
+      type: Push Button
+      variables:
+        - thing_id: Camera-Security-System-Nicla
+          variable_id: clear_event
+      width: 3
+      width_mobile: 4
+      x: 8
+      x_mobile: 4
+      "y": 0
+      y_mobile: 12
+    - height: 12
+      height_mobile: 12
+      name: Log
+      type: Messenger
+      variables:
+        - thing_id: Camera-Security-System-Nicla
+          variable_id: messages
+      width: 10
+      width_mobile: 8
+      x: 12
+      x_mobile: 0
+      "y": 0
+      y_mobile: 0
+    - height: 8
+      height_mobile: 7
+      name: Camera snapshot
+      options:
+        frameless: false
+        showThing: false
+      type: Image
+      width: 7
+      width_mobile: 7
+      x: 4
+      x_mobile: 0
+      "y": 4
+      y_mobile: 20
+    - height: 3
+      height_mobile: 4
+      name: Global Enable
+      options:
+        showLabels: true
+      type: Switch
+      variables:
+        - thing_id: Camera-Security-System-Nicla
+          variable_id: global_enable
+      width: 3
+      width_mobile: 4
+      x: 0
+      x_mobile: 0
+      "y": 0
+      y_mobile: 16
+    - height: 4
+      height_mobile: 4
+      name: Event Detected
+      options:
+        mode: Both Colors
+      type: LED
+      variables:
+        - thing_id: Camera-Security-System-Nicla
+          variable_id: event_detected
+      width: 4
+      width_mobile: 4
+      x: 4
+      x_mobile: 4
+      "y": 0
+      y_mobile: 16
+

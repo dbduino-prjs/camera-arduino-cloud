@@ -41,22 +41,12 @@ Connect you Nicla Vision board and open the File Explorer (you should see the Ni
 
 > Note: Before getting started, make sure that you have an [Arduino Cloud account](https://cloud.arduino.cc/home/?get-started=true)
 
-There are two ways of creating your device:
-* Manual creation of Device, Thing, Dashboard
-* Automatic creation of the whole setup by means of the Cloud template
+The process consists of the following steps:
+1. Create the Device
+2. Create and configure the Thing
+3. Create the Arduino Cloud dashboard
 
-> Note: This guide will focus on the automatic creation using the Cloud template. You can learn more about how to create all the items manually in the [documentation](https://docs.arduino.cc/arduino-cloud/guides/overview/). 
-
-To deploy the project based on the existing template, you have to:
-1. Download the [template file]()
-2. 
-
-
-
-
-#### 1. Create the Device and Thing in the Arduino Cloud
-
-##### Create the Device
+#### 2.1. Create the Device
 
 Go to the [Devices](https://app.arduino.cc/devices) section of the Arduino Cloud and click on **+ DEVICE**. 
 
@@ -64,39 +54,58 @@ Select **Any Device** and follow the instructions on the wizard.
 
 > Note: Save your `Device ID` and `Secret Key` as they will be used in your python code.
 
+#### 2.2. Create and configure the Thing
+
 ##### Create the Thing
 
 In your recently created device page, go to the Associated Thing section, click on **Create Thing** and rename it.
 
 > Note: You can also create the Thing from the [Things list](https://app.arduino.cc/things) and associate it later.
-
  
+##### Create the Variables 
 
-
-
-
-
-### Create the Thing 
-In your recently created device page, go to the Associated Thing section, click on **Create Thing** and rename it.
-
-> Note: You can also create the Thing from the [Things list](https://app.arduino.cc/things) and associate it later.
-
-### Create the Variables 
 Add the variables by clicking on the ADD button. At the end of the process, your list of variables should look like this.
 
-| Name                | Type       | Description |
-|---------------------|------------|-------------|
-| button              | Boolean    | It will hold the status of the physical button |
-| led                 | Boolean    | The variable that we will use to act over the physical LED |
-| test_value          | Integer    | This is a value that will change periodically in the application |
+| Name                 | Type       | Description |
+|----------------------|------------|-------------|
+| global_enable        | Switch     | Global system enable |
+| camera_take_snapshot | Switch     | Trigger a manual camera snapshot |
+| event_detected       | Boolean    | This variable will go to True when a detection event is detected |
+| clear_event          | Switch     | Variable to tell the board to clear the last event |
+| messages             | String     | Variable that will hold the last message and will be shown in the Log |
 
 > Note: All the variables have to be READ-WRITE. You can define the periodicity you wish or set them with the policy ON-CHANGE.
 
+> Note: The CloudSwitch variables could be alternatively defined as 'boolean'. Being defined as Switch allows you to integrate them with Alexa or Google Home.
+
 This is a screenshot for reference.
 
-![Arduino Cloud variables](../../assets/RPI-GPIO-Basic-Thing_Variables2.png)
+![Arduino Cloud variables](/extra/assets/Camera-Security-System-Variables.png)
 
+#### 2.3. Create the Dashboard
 
+The dashboard that we are going to build will look like this
+
+![Example dashboard](/extra/assets/Camera-Security-System-Dashboard.png)
+
+There are 2 ways to create the dashboard. Choose one:
+1. Create it manually. Replicate the one shown above following the instructions in [this guide](https://docs.arduino.cc/arduino-cloud/cloud-interface/dashboard-widgets/). You can use the following table as a reference:
+
+| Variable             | Type        | Widget |
+|----------------------|-------------|-------------|
+| global_enable        | Switch      | Global Enable |
+| camera_take_snapshot | Push Button | Take Manual Picture |
+| event_detected       | LED         | Event Detected |
+| clear_event          | Push Button | Clear Event |
+| messages             | Messenger   | Log |
+| -No variable needed- | Image   | Camera snapshot |
+
+  The Camera snapshot "Image widget" should be configured as follows:
+  - Image source: URL
+  - URL: Your picture URL (example. https://192.168.1.204:8443/download/snapshot.jpg)
+  - Refresh: Set the periodicity you prefer
+
+2. Clone the [template](./dashboard-Camera-Security-System.yaml) following the instructions in the [Annex](README.md#clone-the-dashboard-using-cloud-cli)
 
 ### 3. Running your code with OpenMV
 
@@ -149,9 +158,9 @@ In your dashboard you have the following widgets:
 * **Clear event**: A button to clear the event
 * **Event Time**: A time selector that indicates the date and time of the last event
 * **Camera snapshot**: An image widget with the latest camera snapshot (either captured automatically from an event or manually)
-* **Messages**: A messenger widget with the history of all the events
+* **Log**: A messenger widget with the history of all the events
 
-![Example dashboard](/extra/assets/Nicla-Security-Application-Dashboard.png)
+![Example dashboard](/extra/assets/Camera-Security-System-Dashboard.png)
 
 ## Future improvements
 
@@ -159,3 +168,37 @@ Here, you can find some potential future improvements
 * Generalize the project to be used with any kind of camera-based board that is supported by OpenMV
 * Change the detection method to physical detection
 * Use ML to detect specific types of noise
+
+## Additional information
+### Arduino Cloud
+[Arduino Cloud](https://cloud.arduino.cc/) is a platform that simplifies the process of developing, deploying, and managing IoT devices. It supports various hardware, including Arduino boards, ESP boards and any device programmed with Python or Javascript. It makes it easy for makers, IoT enthusiasts, and professionals to build connected projects without high programming skills.
+
+The platform allows for easy management and monitoring of connected devices through customizable dashboards, which provide real-time visualisations of the device's data. The dashboards can be accessed remotely through the mobile app Arduino IoT Cloud Remote, which is available for both Android and iOS devices, allowing users to manage their devices from anywhere.
+
+#### Clone the dashboard using Cloud CLI
+
+As described in the tutorial, you can create the dashboard on your own, but here I will show you a very handy trick so that you can just make a copy of a template that I have created. For that, you need to use [Arduino Cloud CLI](https://docs.arduino.cc/arduino-cloud/arduino-cloud-cli/getting-started/).
+
+The steps are the following:
+1. Download and extract the latest release.
+Download it from [here](https://github.com/arduino/arduino-cloud-cli/releases)
+Make sure it is in your machine's PATH, so that it can be used globally.
+After installation, check that it is working by opening a terminal, and type:
+
+2. Set your credentials
+To authenticate with the Arduino Cloud, we will need to first set our credentials, using our clientId and clientSecret which are obtained from the Arduino Cloud [API keys section](https://app.arduino.cc/api-keys). Run the following command and introduce the credentials:
+```
+arduino-cloud-cli credentials init
+```
+
+3. Create the dashboard
+
+Download the dashboard template yaml file [dashboard-Camera-Security-System.yaml](dashboard-Camera-Security-System.yaml/dashboard-Camera-Security-System.yaml) in this project.
+
+```
+arduino-cloud-cli dashboard create \
+		--name <Your-Dashboard_Name> \ 
+		--template dashboard-Camera-Security-System.yaml \ 
+		--override Camera-Security-System-Nicla=<Your-Thing-ID>
+```
+Replace *\<Your-Dashboard-Name\>* and *\<Your-Thing-ID\>* with your actual data.
