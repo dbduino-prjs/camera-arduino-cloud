@@ -4,7 +4,7 @@ This repository contains some projects using a camera and Arduino Cloud.
 
 ## Projects
 
-The
+You can find all the projects in this repository in the following table:
 
 | Project | Title | Description |
 | ----------- | ----------- | ----------- |

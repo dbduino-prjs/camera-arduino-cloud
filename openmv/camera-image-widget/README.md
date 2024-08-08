@@ -45,6 +45,7 @@ The process consists of the following steps:
 1. Create the Device
 2. Create and configure the Thing
 3. Create the Arduino Cloud dashboard
+4. Create the trigger to be notified via email or mobile app
 
 #### 2.1. Create the Device
 
@@ -106,6 +107,20 @@ There are 2 ways to create the dashboard. Choose one:
   - Refresh: Set the periodicity you prefer
 
 2. Clone the [template](./dashboard-Camera-Security-System.yaml) following the instructions in the [Annex](README.md#clone-the-dashboard-using-cloud-cli)
+
+#### 2.4. Create the Trigger
+
+With a trigger you can configure an condition that will be used to send you a notification when an event happen. In this case we will use the variable `event_detected`
+
+Follow these steps:
+
+1. Go to the [Triggers](https://app.arduino.cc/triggers) section.
+2. Create one trigger clicking on **+ TRIGGER**
+3. Rename the trigger
+4. Select the variable `event_detected` of your Thing
+5. Configure your actions: Send email or Send push notifications
+
+> Note: Push notifications will be sent to the mobile phones where the [IoT Remote app](https://cloud.arduino.cc/iot-remote-app/) is installed.
 
 ### 3. Running your code with OpenMV
 
